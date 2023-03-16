@@ -1,0 +1,60 @@
+service: my-service
+
+provider:
+  name: aws
+  stage: dev
+  region: ap-south-1
+  runtime: nodejs14.x
+  iamRoleStatement:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:ap-south-1:*:*
+
+functions:
+  create:
+    handler: handler.create
+    events:
+      - http:
+          path: /items
+          method: post
+  read:
+    handler: handler.read
+    events:
+      - http:
+          path: /items/{id}
+          method: get
+  update:
+    handler: handler.update
+    events:
+      - http:
+          path: /items/{id}
+          method: put
+  delete:
+    handler: handler.delete
+    events:
+      - http:
+          path: /items/{id}
+          method: delete
+
+resources:
+  Resources:
+    ItemsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: items
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
